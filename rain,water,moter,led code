@@ -1,0 +1,117 @@
+
+#define RAIN_PIN    32     
+#define WATER_PIN   33     
+#define PUMP_PIN    26     
+#define SERVO_PIN   27    
+
+
+#define SERVO_FREQ  50     
+#define SERVO_RES   16    
+
+int rainValue;
+int waterValue;
+
+String rainStatus;
+String waterStatus;
+String systemStatus;
+
+
+void setServoAngle(int angle) {
+  // Map angle (0–180°) to duty cycle (ESP32 16-bit)
+  uint32_t duty = map(angle, 0, 180, 1638, 7864);
+  ledcWrite(SERVO_PIN, duty);
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  
+  analogSetAttenuation(ADC_11db);
+
+  pinMode(PUMP_PIN, OUTPUT);
+  digitalWrite(PUMP_PIN, LOW);
+
+  ledcAttach(SERVO_PIN, SERVO_FREQ, SERVO_RES);
+
+  
+  setServoAngle(0);
+
+  Serial.println("Smart Flood Monitoring System Started");
+}
+
+void loop() {
+
+  //READ SENSOR VALUES
+  rainValue  = analogRead(RAIN_PIN);
+  waterValue = analogRead(WATER_PIN);
+
+  //RAIN STATUS
+  if (rainValue < 1000) {
+    rainStatus = "No Rain";
+  } else if (rainValue < 2000) {
+    rainStatus = "Light Rain";
+  } else if (rainValue < 3200) {
+    rainStatus = "Heavy Rain";
+  } else {
+    rainStatus = "Extreme Rain";
+  }
+
+  // WATER LEVEL STATUS
+  if (waterValue < 1800) {
+    waterStatus = "Low Water Level";
+  } else if (waterValue < 2300) {
+    waterStatus = "Medium Water Level";
+  } else {
+    waterStatus = "High Water Level";
+  }
+
+  if (waterValue >= 2300 ||
+     (waterValue >= 1800 && rainValue >= 3200)) {
+    systemStatus = "FLOOD RISK";
+  }
+  else if (rainValue >= 2000 || waterValue >= 1800) {
+    systemStatus = "WARNING";
+  }
+  else {
+    systemStatus = "NORMAL";
+  }
+
+  //PUMP CONTROL
+  if (systemStatus == "NORMAL") {
+    digitalWrite(PUMP_PIN, LOW);
+  } else {
+    digitalWrite(PUMP_PIN, HIGH);
+  }
+
+  //FLOOD GATE
+  if (systemStatus == "FLOOD RISK") {
+    setServoAngle(90);   // Gate OPEN
+  } else {
+    setServoAngle(0);    // Gate CLOSED
+  }
+
+  //SERIAL MONITOR OUTPUT
+  Serial.println("========== SYSTEM STATUS ==========");
+  Serial.print("Rain Status: ");
+  Serial.print(rainStatus);
+  Serial.print(" | Value: ");
+  Serial.println(rainValue);
+
+  Serial.print("Water Level: ");
+  Serial.print(waterStatus);
+  Serial.print(" | Value: ");
+  Serial.println(waterValue);
+
+  Serial.print("OVERALL STATUS: ");
+  Serial.println(systemStatus);
+
+  Serial.print("PUMP: ");
+  Serial.println(digitalRead(PUMP_PIN) ? "ON" : "OFF");
+
+  Serial.print("GATE: ");
+  Serial.println(systemStatus == "FLOOD RISK" ? "OPEN" : "CLOSED");
+
+  Serial.println("===================================\n");
+
+  delay(700);
+}
