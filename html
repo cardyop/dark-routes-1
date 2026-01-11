@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Flood Risk Assessment</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #000000;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        /* Location Section */
+        .location-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #000000;
+        }
+
+        .location-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .location-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* Button */
+        .check-button {
+            display: none;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-top: 30px;
+        }
+
+        /* Alert Box - Primary Status Display */
+        .alert-box {
+            border: 3px solid #000000;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .alert-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .alert-status {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .alert-message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Alert Box States */
+        .alert-normal {
+            border-color: #000000;
+        }
+
+        .alert-warning {
+            border-width: 4px;
+        }
+
+        .alert-danger {
+            border-width: 5px;
+        }
+
+        /* Information Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .info-item {
+            border: 2px solid #000000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .info-detail {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Risk Display */
+        .risk-display {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #000000;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #000000;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Error Message */
+        .error-message {
+            background-color: #ffffff;
+            border: 2px solid #000000;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Hidden by default */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>Smart Flood Risk Assessment</h1>
+            <p class="subtitle">Real-time flood and rainfall monitoring for your area</p>
+        </header>
+
+        <!-- Location Display -->
+        <div class="location-section" id="locationSection">
+            <div class="location-icon">📍</div>
+            <div class="location-text" id="locationText">Detecting your location...</div>
+        </div>
+
+        <!-- Main Content Area - All information displayed here -->
+        <div class="main-content" id="mainContent">
+            <!-- Loading State -->
+            <div class="loading" id="loadingState">
+                <div class="loading-spinner"></div>
+                <p>Analyzing weather data and flood risk...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message hidden" id="errorMessage"></div>
+
+            <!-- All Risk Information in One View -->
+            <div class="risk-display hidden" id="riskDisplay">
+                <!-- Primary Alert Box -->
+                <div class="alert-box" id="alertBox">
+                    <div class="alert-icon" id="alertIcon">⚠️</div>
+                    <div class="alert-status" id="alertStatus">Checking Status...</div>
+                    <div class="alert-message" id="alertMessage">Please wait while we analyze your area</div>
+                </div>
+
+                <!-- Detailed Information Grid -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Current Weather</div>
+                        <div class="info-value" id="weatherValue">--</div>
+                        <div class="info-detail" id="weatherDescription">--</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Rainfall Status</div>
+                        <div class="info-value" id="rainfallValue">--</div>
+                        <div class="info-detail" id="rainfallDescription">--</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Water Level</div>
+                        <div class="info-value" id="waterLevelValue">--</div>
+                        <div class="info-detail" id="waterLevelDescription">--</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Area Severity</div>
+                        <div class="info-value" id="severityValue">--</div>
+                        <div class="info-detail" id="severityDescription">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This is an estimated flood risk based on live weather data. 
+            For official warnings and emergency information, please consult local authorities.
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Replace with your OpenWeatherMap API key
+        const API_KEY = 'YOUR_API_KEY_HERE'; // Get free key at https://openweathermap.org/api
+        const API_BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
+
+        // State management
+        let userLocation = {
+            lat: null,
+            lon: null,
+            city: '',
+            state: '',
+            country: ''
+        };
+
+        // DOM Elements
+        const locationText = document.getElementById('locationText');
+        const loadingState = document.getElementById('loadingState');
+        const errorMessage = document.getElementById('errorMessage');
+        const riskDisplay = document.getElementById('riskDisplay');
+        const alertBox = document.getElementById('alertBox');
+        const alertIcon = document.getElementById('alertIcon');
+        const alertStatus = document.getElementById('alertStatus');
+        const alertMessage = document.getElementById('alertMessage');
+
+        // Initialize the application
+        function init() {
+            detectUserLocation();
+        }
+
+        // Detect user's current location using Geolocation API
+        function detectUserLocation() {
+            if (!navigator.geolocation) {
+                showError('Geolocation is not supported by your browser.');
+                return;
+            }
+
+            locationText.textContent = 'Detecting your location...';
+
+            navigator.geolocation.getCurrentPosition(
+                // Success callback
+                async (position) => {
+                    userLocation.lat = position.coords.latitude;
+                    userLocation.lon = position.coords.longitude;
+                    
+                    // Get location name from coordinates
+                    await getLocationName(userLocation.lat, userLocation.lon);
+                    displayLocation();
+                    
+                    // Automatically check flood risk after location is detected
+                    handleCheckFloodRisk();
+                },
+                // Error callback
+                (error) => {
+                    let errorMsg = 'Unable to detect your location. ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg += 'Please allow location access.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg += 'Location information unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg += 'Location request timed out.';
+                            break;
+                    }
+                    showError(errorMsg);
+                }
+            );
+        }
+
+        // Get readable location name from coordinates using reverse geocoding
+        async function getLocationName(lat, lon) {
+            try {
+                const response = await fetch(
+                    `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
+                );
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    userLocation.city = data[0].name || 'Unknown';
+                    userLocation.state = data[0].state || '';
+                    userLocation.country = data[0].country || '';
+                }
+            } catch (error) {
+                console.error('Error getting location name:', error);
+                userLocation.city = 'Your Location';
+            }
+        }
+
+        // Display the detected location
+        function displayLocation() {
+            let locationString = userLocation.city;
+            if (userLocation.state) locationString += `, ${userLocation.state}`;
+            if (userLocation.country) locationString += `, ${userLocation.country}`;
+            
+            locationText.textContent = locationString;
+        }
+
+        // Handle the main flood risk check
+        async function handleCheckFloodRisk() {
+            // Hide any previous errors
+            hideError();
+            
+            // Show loading state
+            loadingState.classList.remove('hidden');
+            riskDisplay.classList.add('hidden');
+
+            try {
+                // Fetch weather data from OpenWeatherMap API
+                const weatherData = await fetchWeatherData();
+                
+                // Analyze and display results on main page
+                analyzeFloodRisk(weatherData);
+                
+                // Show results on main page
+                riskDisplay.classList.remove('hidden');
+                
+            } catch (error) {
+                showError('Failed to fetch weather data. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        // Fetch weather data from OpenWeatherMap API
+        async function fetchWeatherData() {
+            const url = `${API_BASE_URL}?lat=${userLocation.lat}&lon=${userLocation.lon}&appid=${API_KEY}&units=metric`;
+            
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('Weather API request failed');
+            }
+            
+            return await response.json();
+        }
+
+        // Analyze flood risk based on weather data
+        function analyzeFloodRisk(weatherData) {
+            // Extract relevant data
+            const rainfall = weatherData.rain ? (weatherData.rain['1h'] || 0) : 0; // mm/hour
+            const weatherMain = weatherData.weather[0].main;
+            const weatherDesc = weatherData.weather[0].description;
+            const temp = weatherData.main.temp;
+            const humidity = weatherData.main.humidity;
+
+            // Update Weather Information
+            document.getElementById('weatherValue').textContent = `${Math.round(temp)}°C`;
+            document.getElementById('weatherDescription').textContent = 
+                `${weatherDesc.charAt(0).toUpperCase() + weatherDesc.slice(1)}, Humidity: ${humidity}%`;
+
+            // Analyze Rainfall Intensity
+            let rainfallSeverity, rainfallDesc;
+            if (rainfall === 0) {
+                rainfallSeverity = 'No Rain';
+                rainfallDesc = 'No rainfall detected in your area right now.';
+            } else if (rainfall < 2.5) {
+                rainfallSeverity = 'Light Rain';
+                rainfallDesc = `Light rainfall of ${rainfall.toFixed(1)} mm/hour.`;
+            } else if (rainfall < 10) {
+                rainfallSeverity = 'Moderate Rain';
+                rainfallDesc = `Moderate rainfall of ${rainfall.toFixed(1)} mm/hour.`;
+            } else if (rainfall < 50) {
+                rainfallSeverity = 'Heavy Rain';
+                rainfallDesc = `Heavy rainfall of ${rainfall.toFixed(1)} mm/hour. Water accumulation possible.`;
+            } else {
+                rainfallSeverity = 'Extreme Rain';
+                rainfallDesc = `Extreme rainfall of ${rainfall.toFixed(1)} mm/hour. Significant accumulation expected.`;
+            }
+
+            document.getElementById('rainfallValue').textContent = rainfallSeverity;
+            document.getElementById('rainfallDescription').textContent = rainfallDesc;
+
+            // Calculate Water Level
+            let waterLevel, waterLevelDesc;
+            if (rainfall === 0) {
+                waterLevel = 'Low';
+                waterLevelDesc = 'Water levels are normal.';
+            } else if (rainfall < 10) {
+                waterLevel = 'Low to Medium';
+                waterLevelDesc = 'Water levels slightly elevated.';
+            } else if (rainfall < 30) {
+                waterLevel = 'Medium to High';
+                waterLevelDesc = 'Water levels rising, some flooding possible.';
+            } else {
+                waterLevel = 'High';
+                waterLevelDesc = 'Water levels critically high, flooding likely.';
+            }
+
+            document.getElementById('waterLevelValue').textContent = waterLevel;
+            document.getElementById('waterLevelDescription').textContent = waterLevelDesc;
+
+            // Calculate Area Severity (how badly affected)
+            let severity, severityDesc;
+            if (rainfall === 0) {
+                severity = 'Safe';
+                severityDesc = 'Your area is not affected by flooding.';
+            } else if (rainfall < 10) {
+                severity = 'Safe';
+                severityDesc = 'Minor rainfall, area remains safe.';
+            } else if (rainfall < 30) {
+                severity = 'Moderately Flooded';
+                severityDesc = 'Some areas may experience flooding. Exercise caution.';
+            } else {
+                severity = 'Severely Flooded';
+                severityDesc = 'Significant flooding expected. Avoid unnecessary travel.';
+            }
+
+            document.getElementById('severityValue').textContent = severity;
+            document.getElementById('severityDescription').textContent = severityDesc;
+
+            // Update Main Alert Box
+            let floodRisk, floodDesc, alertClass, icon;
+            
+            if (rainfall === 0) {
+                floodRisk = 'Normal - All Clear';
+                floodDesc = 'Your area is safe. No flood risk detected at this time. Weather conditions are normal.';
+                alertClass = 'alert-normal';
+                icon = '✅';
+            } else if (rainfall < 10) {
+                floodRisk = 'Low Risk';
+                floodDesc = 'Minor rainfall detected. Continue normal activities with awareness. No immediate flood threat.';
+                alertClass = 'alert-normal';
+                icon = '🌦️';
+            } else if (rainfall < 30) {
+                floodRisk = 'Warning - Monitor Conditions';
+                floodDesc = 'Moderate to heavy rainfall detected. Stay alert and avoid low-lying areas. Monitor local updates.';
+                alertClass = 'alert-warning';
+                icon = '⚠️';
+            } else {
+                floodRisk = 'Flood Risk - Take Action';
+                floodDesc = 'Heavy to extreme rainfall. Flooding is likely in your area. Avoid travel, stay in safe elevated areas, and follow emergency instructions.';
+                alertClass = 'alert-danger';
+                icon = '🚨';
+            }
+
+            // Update the main alert display
+            alertBox.className = `alert-box ${alertClass}`;
+            alertIcon.textContent = icon;
+            alertStatus.textContent = floodRisk;
+            alertMessage.textContent = floodDesc;
+        }
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        // Hide error message
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
