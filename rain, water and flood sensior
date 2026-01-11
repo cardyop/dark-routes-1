@@ -1,0 +1,80 @@
+
+#define RAIN_PIN   32
+#define WATER_PIN  33
+
+int rainValue;
+int waterValue;
+
+String rainStatus;
+String waterStatus;
+String systemStatus;
+
+void setup() {
+  Serial.begin(115200);
+
+ 
+  analogSetAttenuation(ADC_11db);
+}
+
+void loop() {
+
+  
+  rainValue  = analogRead(RAIN_PIN);
+  waterValue = analogRead(WATER_PIN);
+
+
+  if (rainValue < 1000) {
+    rainStatus = "No Rain";
+  }
+  else if (rainValue < 2000) {
+    rainStatus = "Light Rain";
+  }
+  else if (rainValue < 3200) {
+    rainStatus = "Heavy Rain";
+  }
+  else {
+    rainStatus = "Extreme Rain";
+  }
+
+ 
+  if (waterValue < 1800) {
+    waterStatus = "Low Water Level";
+  }
+  else if (waterValue < 2300) {
+    waterStatus = "Medium Water Level";
+  }
+  else {
+    waterStatus = "High Water Level";
+  }
+
+  
+  if (rainValue >= 2000 && waterValue >= 2300) {
+    systemStatus = "FLOOD RISK";
+  }
+  else if (rainValue >= 2000 || waterValue >= 1800) {
+    systemStatus = "WARNING";
+  }
+  else {
+    systemStatus = "NORMAL";
+  }
+
+ 
+  Serial.println("========== SYSTEM STATUS ==========");
+
+  Serial.print("Rain: ");
+  Serial.print(rainStatus);
+  Serial.print(" | Value: ");
+  Serial.println(rainValue);
+
+  Serial.print("Water Level: ");
+  Serial.print(waterStatus);
+  Serial.print(" | Value: ");
+  Serial.println(waterValue);
+
+  Serial.print("OVERALL STATUS: ");
+  Serial.println(systemStatus);
+
+  Serial.println("===================================\n");
+
+  delay(700);
+}
