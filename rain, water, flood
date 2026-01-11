@@ -1,0 +1,24 @@
+We used an ESP32 microcontroller, two potentiometers, and one rainwater sensor in our project.
+One potentiometer is used to simulate the water level, and the second potentiometer is used to simulate the drainage system level.
+
+Connections:
+
+First Potentiometer (Water Level Simulation):
+
+GND pin is connected to the GND of the ESP32
+
+Signal (middle) pin is connected to an analog input pin of the ESP32
+
+VCC pin is connected to the VCC of the ESP32
+
+Second Potentiometer (Drainage System Control):
+
+GND pin is connected to the GND of the ESP32
+
+Signal (middle) pin is connected to GPIO pin 33 of the ESP32
+
+VCC pin is connected to the VCC of the ESP32
+
+The rainwater sensor is used to detect rainfall conditions, and based on the input from the potentiometers and the rain sensor, the ESP32 automatically controls the drainage system.
+
+We have simulated it and we ahve seen it is working 
